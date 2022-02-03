@@ -1,10 +1,14 @@
 'use strict';
 
 const Hapi = require('@hapi/hapi');
-const Hoek = require('@hapi/hoek');
 const Vision = require('@hapi/vision');
 const Cookie = require('@hapi/cookie');
 const Handlebars = require('handlebars');
+const Hoek = require('@hapi/hoek');
+const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
+const routes = require('./src/routes');
+const users = require('./.data/users.js');
 
 
 const init = async () => {
@@ -15,6 +19,7 @@ const init = async () => {
 
 	await server.register(Vision);
 	await server.register(Cookie);
+	//server.validator(Joi);
 
 	server.views({
 		engines: { html: Handlebars },
@@ -22,49 +27,36 @@ const init = async () => {
 		path: 'templates'
 	});
 
-	server.auth.strategy('base', 'cookie', {
-		cookie: {
-			password: 'secret',
-			ttl: 60 * 60 * 1000 // One hour
-		},
-	});
+	server.auth.strategy('session', 'cookie', {
+        cookie: {
+            name: 'happy',
+            password: 'supermegahypersecretcookiepassword',
+            isSecure: false
+        },
+        redirectTo: '/login',
+        validateFunc: async (request, session) => {
+            const account = users.find((user) => (user.id === session.id));
 
-	server.route({
-		method: 'GET',
-		path: '/',
-		handler: rootCtrl
-	});
+            if (!account) {
+                return { valid: false };
+            }
 
-	server.route({
-		method: 'POST',
-		path: '/login',
-		config: {
-			validate: {
-				payload: {
-					email: Joi.string().email().required(),
-					password: Joi.string().min(2).max(200).required()
-				}
-			}
-		},
-		handler: loginCtrl
-	});
+            return { valid: true, credentials: account };
+        }
+    });
 
-	await server.start();
-	console.log('Server running on %s', server.info.uri);
+	server.auth.default('session');
+	server.route(routes)
+
+	await server
+		.start()
+		.then(() => console.log('Server running on %s', server.info.uri));
 };
-
-function rootCtrl(request, h) {
-	return h.view('index');
-	//return 'Hello World';
-}
-
-function loginCtrl(request, h) {
-	return h.view('index');
-}
 
 process.on('unhandledRejection', (err) => {
 	console.log(err);
 	process.exit(1);
 })
+
 
 init();
