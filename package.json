@@ -1,0 +1,20 @@
+{
+  "name": "hapi_intro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/cookie": "^11.0.2",
+    "@hapi/hapi": "^20.2.1",
+    "@hapi/hoek": "^9.2.1",
+    "@hapi/vision": "^6.1.0",
+    "handlebars": "^4.7.7",
+    "nodemon": "^2.0.15"
+  }
+}
