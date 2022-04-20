@@ -23,6 +23,10 @@ const routes = [{
     method: 'GET',
     path: '/account',
     handler: (_,__) => 'account'
+}, {
+    method: 'GET',
+    path: '/logout',
+    handler: (request,h) => { request.cookieAuth.clear(); return h.redirect('/'); }
 }];
 
 function rootHandler(request, h) {
@@ -37,7 +41,9 @@ async function loginHandler(request, h) {
 		return h.redirect('/login');
 	}
 	request.cookieAuth.set({ id: account.id })
+
 	return h.redirect('/');
 }
+
 
 module.exports = routes;
